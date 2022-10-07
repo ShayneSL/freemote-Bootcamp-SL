@@ -133,25 +133,34 @@
 
     <div class="grid__item {{ product_description_width }}">
       <div class="product-single__meta">
-
         <h1 class="product-single__title">{{ product.title }}</h1>
-        <div>⭐⭐⭐⭐⭐</div>
-        <script>window.performance.mark('debut:product:title_visible');</script>
+          {% for tag in product.tags %}
+            {% if tag contains 'affiliate' %}
+              {% assign isAffiliateProduct = 'true'%}
+              {% assign affiliateURL = tag | split: ':' | last%}
+            {%endif%}
+          {% endfor %}
+        
+        {%unless isAffiliateProduct%}
+          <div class='rating'>⭐⭐⭐⭐⭐</div>
+          
+          <script>window.performance.mark('debut:product:title_visible');</script>
 
-          <div class="product__price">
-            {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
-          </div>
-
-          {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
-            <div class="product__policies rte" data-product-policies>
-              {%- if cart.taxes_included -%}
-                {{ 'products.product.include_taxes' | t }}
-              {%- endif -%}
-              {%- if shop.shipping_policy.body != blank -%}
-                {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
-              {%- endif -%}
+            <div class="product__price">
+              {% include 'product-price', variant: current_variant, show_vendor: section.settings.show_vendor %}
             </div>
-          {%- endif -%}
+
+            {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
+              <div class="product__policies rte" data-product-policies>
+                {%- if cart.taxes_included -%}
+                  {{ 'products.product.include_taxes' | t }}
+                {%- endif -%}
+                {%- if shop.shipping_policy.body != blank -%}
+                  {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+        {%endunless%}
 
           {% capture "form_classes" -%}
             product-form product-form-{{ section.id }}
@@ -213,6 +222,7 @@
               <span class="product-form__error-message" data-error-message>{{ 'products.product.quantity_minimum_message' | t }}</span>
             </div>
 
+          {%unless isAffiliateProduct%}
             <div class="product-form__controls-group product-form__controls-group--submit">
               <div class="product-form__item product-form__item--submit
                 {%- if section.settings.enable_payment_button %} product-form__item--payment-button {%- endif -%}
@@ -240,6 +250,11 @@
                 {% endif %}
               </div>
             </div>
+          {%else%}
+            {% if isAffiliateProduct %}
+              <a data-add-to-cart class ='btn product-form__cart-submit' href='{{affiliateURL}}' target='_blank'>See On Amazon</a>
+            {% endif %}
+          {%endunless%}
           {% endform %}
         </div>
 
